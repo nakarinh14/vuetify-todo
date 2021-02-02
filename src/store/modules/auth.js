@@ -4,13 +4,21 @@ export default {
     user: null,
   },
   mutations: {
-    setUser(state, value) {
-      state.user = value;
+    setUser(state, user) {
+      state.user = user;
     },
   },
   actions: {
-    setUser({ commit }, user) {
-      commit('SET_LOGGED_IN', user);
+    async setUserProfile({ commit }, user) {
+      let userData = null;
+
+      if (user) {
+        userData = {
+          email: user.email,
+          uid: user.uid,
+        };
+      }
+      commit('setUser', userData);
     },
   },
   getters: {

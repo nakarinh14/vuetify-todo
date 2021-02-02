@@ -1,8 +1,8 @@
 const routes = [
   {
-    path: '/todo',
+    path: '/',
     name: 'Todo',
-    component: () => import('@/views/Todo.vue'),
+    component: () => import(/* webpackChunkName: "todo" */ '@/views/Todo.vue'),
   },
 ];
 

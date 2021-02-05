@@ -23,9 +23,6 @@
 </template>
 
 <script>
-import firebase from 'firebase/app';
-import 'firebase/database';
-
 import { mapGetters } from 'vuex';
 import Card from '@/components/Card.vue';
 
@@ -40,8 +37,6 @@ export default {
   },
   methods: {
     initiateRef() {
-      const { uid } = this.$store.getters['auth/user'];
-      this.$store.dispatch('todo/setRef', firebase.database().ref(`/todo/${uid}`));
       this.todoRef.on('value', (snapshot) => {
         this.$store.dispatch('todo/setTodo', snapshot.val());
       });

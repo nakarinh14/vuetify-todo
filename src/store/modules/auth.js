@@ -9,7 +9,7 @@ export default {
     },
   },
   actions: {
-    async setUserProfile({ commit }, user) {
+    async setUserProfile({ commit, dispatch }, user) {
       let userData = null;
 
       if (user) {
@@ -19,6 +19,7 @@ export default {
         };
       }
       commit('setUser', userData);
+      dispatch('todo/setRef', userData, { root: true });
     },
   },
   getters: {

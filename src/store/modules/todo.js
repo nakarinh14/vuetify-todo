@@ -1,4 +1,5 @@
-// import mock from '@/utils/mock';
+import firebase from 'firebase/app';
+import 'firebase/database';
 
 export default {
   namespaced: true,
@@ -18,8 +19,8 @@ export default {
     setTodo({ commit }, todos) {
       commit('setTodo', todos);
     },
-    setRef({ commit }, ref) {
-      commit('setRef', ref);
+    setRef({ commit }, userData) {
+      commit('setRef', userData ? firebase.database().ref(`/todo/${userData.uid}`) : null);
     },
   },
   getters: {

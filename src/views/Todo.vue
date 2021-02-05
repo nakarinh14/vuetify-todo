@@ -33,7 +33,6 @@ export default {
   name: 'Todo',
   components: { Card },
   data: () => ({
-    todoRef: null,
     newTodo: '',
   }),
   created() {
@@ -42,7 +41,7 @@ export default {
   methods: {
     initiateRef() {
       const { uid } = this.$store.getters['auth/user'];
-      this.todoRef = firebase.database().ref(`/todo/${uid}`);
+      this.$store.dispatch('todo/setRef', firebase.database().ref(`/todo/${uid}`));
       this.todoRef.on('value', (snapshot) => {
         this.$store.dispatch('todo/setTodo', snapshot.val());
       });
@@ -62,12 +61,9 @@ export default {
   computed: {
     ...mapGetters({
       todos: 'todo/todos',
+      todoRef: 'todo/ref',
     }),
   },
 };
 
 </script>
-
-<style scoped>
-
-</style>

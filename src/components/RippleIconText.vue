@@ -34,6 +34,7 @@ export default {
 #btn {
   pointer-events: none;
 }
+
 div {
   cursor: pointer;
   user-select: none;

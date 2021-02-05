@@ -32,7 +32,7 @@
               <v-spacer></v-spacer>
               <v-btn
                 @click="() => removeTodo(idx)"
-                :ripple = false
+                :ripple=false
                 color="red"
                 icon
               >
@@ -68,60 +68,14 @@
                 <v-icon>{{ todo.view ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
               </v-btn>
             </v-card-actions>
-            <v-expand-transition>
-              <div v-show="todo.view">
-                <v-card-text>
-                  <v-divider></v-divider>
-                  <v-container>
-                    <v-row
-                      align="center"
-                      no-gutters
-                    >
-                      <v-col
-                        cols="12"
-                        v-for="(subtask, sub_idx) in todo.subtask"
-                        :key="`${idx}_${sub_idx}`"
-                      >
-
-                        <v-btn
-                          :ripple="false"
-                          :color="subtask.isDone ? 'green' : 'grey'"
-                          @click="() => toggleCheck(idx, sub_idx)"
-                          icon
-                        >
-                          <v-icon>
-                            mdi-check-circle-outline
-                          </v-icon>
-                        </v-btn>
-                        <span>{{ subtask.text }}</span>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          @click="() => removeTodo(idx, sub_idx)"
-                          :ripple = false
-                          color="red"
-                          icon
-                        >
-                          <v-icon>
-                            mdi-close
-                          </v-icon>
-                        </v-btn>
-                        <v-divider inset></v-divider>
-                      </v-col>
-                      <v-col cols="12">
-                        <RippleIconText
-                          id="add-sub"
-                          display="Add Subtask"
-                          icon-color="blue"
-                          icon-name="mdi-tooltip-plus-outline"
-                          :trigger="() => addSubtask(idx)"
-                        >
-                        </RippleIconText>
-                      </v-col>
-                    </v-row>
-                  </v-container>
-                </v-card-text>
-              </div>
-            </v-expand-transition>
+            <Subcard
+              :view="todo.view"
+              :subtask="todo.subtask"
+              :parent="idx"
+              :toggle-check="toggleCheck"
+              :remove-todo="removeTodo"
+            >
+            </Subcard>
           </v-card>
         </v-col>
       </v-row>
@@ -155,11 +109,14 @@
 <script>
 import { mapGetters } from 'vuex';
 import RippleIconText from '@/components/RippleIconText.vue';
+import Subcard from '@/components/Subcard.vue';
 
 export default {
   name: 'Card',
-  components: { RippleIconText },
-  props: ['todoRef'],
+  components: {
+    Subcard,
+    RippleIconText,
+  },
   data() {
     return {
       datePickerView: null,
@@ -181,9 +138,10 @@ export default {
             const val = !todo.isDone;
             todo.isDone = val;
             if (todo.subtask) {
-              Object.keys(todo.subtask).forEach((c) => {
-                todo.subtask[c].isDone = val;
-              });
+              Object.keys(todo.subtask)
+                .forEach((c) => {
+                  todo.subtask[c].isDone = val;
+                });
             }
           }
         }
@@ -191,25 +149,21 @@ export default {
       });
     },
     toggleExpansion(key) {
-      this.todoRef.child(key).update({
-        view: !this.todos[key].view,
-      });
+      this.todoRef.child(key)
+        .update({
+          view: !this.todos[key].view,
+        });
     },
     toggleDatePicker(key) {
       this.dateTarget = key;
       this.datePickerView = this.todos[key].date;
       this.modal = true;
     },
-    addSubtask(key) {
-      this.todoRef.child(key).child('subtask').push({
-        text: 'New Subtask',
-        isDone: false,
-      });
-    },
     removeTodo(parent, child) {
       let ref = this.todoRef.child(parent);
       if (child) {
-        ref = ref.child('subtask').child(child);
+        ref = ref.child('subtask')
+          .child(child);
       }
       ref.remove();
     },
@@ -241,6 +195,7 @@ export default {
   computed: {
     ...mapGetters({
       todos: 'todo/todos',
+      todoRef: 'todo/ref',
     }),
   },
 };
@@ -250,5 +205,4 @@ export default {
 .no-hover::before {
   background-color: transparent !important;
 }
-
 </style>

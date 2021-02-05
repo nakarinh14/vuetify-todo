@@ -17,8 +17,10 @@
               <v-btn
                 class="no-hover"
                 :ripple="false"
-                :color="calculateProgress(todo) === 100 ? 'green' : 'grey'"
-                icon>
+                :color="calculateProgress(idx) === 100 ? 'green' : 'grey'"
+                @click="() => toggleCheck(idx)"
+                icon
+              >
                 <v-icon
                   large
                   left
@@ -27,10 +29,22 @@
                 </v-icon>
               </v-btn>
               <span>{{ todo.text }}</span>
+              <v-spacer></v-spacer>
+              <v-btn
+                @click="() => removeTodo(idx)"
+                :ripple = false
+                color="red"
+                icon
+              >
+                <v-icon>
+                  mdi-close
+
+                </v-icon>
+              </v-btn>
             </v-card-title>
             <v-progress-linear
-              :value="calculateProgress(todo)"
-              color="purple lighten-1"
+              :value="calculateProgress(idx)"
+              :color="progressColor(calculateProgress(idx))"
               height="20"
             >
               <template v-slot:default="{ value }">
@@ -39,7 +53,7 @@
             </v-progress-linear>
             <v-card-actions>
               <RippleIconText
-                :trigger="()=>toggleDatePicker(todo)"
+                :trigger="() => toggleDatePicker(idx)"
                 :display="parseViewDate(todo.date)"
                 :icon-color="todo.date? 'blue' : 'grey'"
                 icon-name="mdi-calendar"
@@ -49,7 +63,7 @@
               <v-spacer></v-spacer>
               <v-btn
                 icon
-                @click="toggleExpansion(todo)"
+                @click="toggleExpansion(idx)"
               >
                 <v-icon>{{ todo.view ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
               </v-btn>
@@ -69,12 +83,28 @@
                         :key="`${idx}_${sub_idx}`"
                       >
 
-                        <v-btn :ripple="false" :color="subtask.isDone ? 'green' : 'grey'" icon>
+                        <v-btn
+                          :ripple="false"
+                          :color="subtask.isDone ? 'green' : 'grey'"
+                          @click="() => toggleCheck(idx, sub_idx)"
+                          icon
+                        >
                           <v-icon>
                             mdi-check-circle-outline
                           </v-icon>
                         </v-btn>
-                        {{ subtask.text }}
+                        <span>{{ subtask.text }}</span>
+                        <v-spacer></v-spacer>
+                        <v-btn
+                          @click="() => removeTodo(idx, sub_idx)"
+                          :ripple = false
+                          color="red"
+                          icon
+                        >
+                          <v-icon>
+                            mdi-close
+                          </v-icon>
+                        </v-btn>
                         <v-divider inset></v-divider>
                       </v-col>
                       <v-col cols="12">
@@ -83,6 +113,7 @@
                           display="Add Subtask"
                           icon-color="blue"
                           icon-name="mdi-tooltip-plus-outline"
+                          :trigger="() => addSubtask(idx)"
                         >
                         </RippleIconText>
                       </v-col>
@@ -133,48 +164,78 @@ export default {
     return {
       datePickerView: null,
       dateTarget: null,
-      expandTarget: null,
       modal: false,
       editing: null,
       showSubtasks: [],
     };
   },
   methods: {
-    toggleCheck(todo) {
-      console.log(todo);
-      // todo.isDone = !todo.isDone;
-      // if (todo.subtask) {
-      //
-      // }
+    toggleCheck(parent, child) {
+      const ref = this.todoRef.child(parent);
+      /* eslint-disable no-param-reassign */
+      ref.transaction((todo) => {
+        if (todo) {
+          if (child) {
+            todo.subtask[child].isDone = !todo.subtask[child].isDone;
+          } else {
+            const val = !todo.isDone;
+            todo.isDone = val;
+            if (todo.subtask) {
+              Object.keys(todo.subtask).forEach((c) => {
+                todo.subtask[c].isDone = val;
+              });
+            }
+          }
+        }
+        return todo;
+      });
     },
-    toggleNameEdit(idx) {
-      this.todos[idx].isDone = !this.todos[idx].isDone;
+    toggleExpansion(key) {
+      this.todoRef.child(key).update({
+        view: !this.todos[key].view,
+      });
     },
-    toggleExpansion(todo) {
-      this.expandTarget = todo;
-      this.expandTarget.view = !this.expandTarget.view;
-    },
-    toggleDatePicker(todo) {
-      this.dateTarget = todo;
-      this.datePickerView = todo.date;
+    toggleDatePicker(key) {
+      this.dateTarget = key;
+      this.datePickerView = this.todos[key].date;
       this.modal = true;
+    },
+    addSubtask(key) {
+      this.todoRef.child(key).child('subtask').push({
+        text: 'New Subtask',
+        isDone: false,
+      });
+    },
+    removeTodo(parent, child) {
+      let ref = this.todoRef.child(parent);
+      if (child) {
+        ref = ref.child('subtask').child(child);
+      }
+      ref.remove();
     },
     confirmDatePicker() {
       this.modal = false;
-      this.dateTarget.date = this.datePickerView;
+      this.todoRef.child(this.dateTarget).update({
+        date: this.datePickerView,
+      });
       this.datePickerView = null;
       this.dateTarget = null;
     },
     parseViewDate(val) {
       return val || 'Set a date';
     },
-    calculateProgress(todo) {
+    calculateProgress(key) {
       let val = 0;
-      if (todo.subtask) {
-        const doneLength = todo.subtask.filter((item) => item.isDone).length;
-        val = Math.ceil((doneLength / todo.subtask.length) * 100);
+      if (this.todos[key].subtask) {
+        const doneLength = Object.keys(this.todos[key].subtask)
+          .filter((k) => this.todos[key].subtask[k].isDone)
+          .length;
+        val = Math.ceil((doneLength / Object.keys(this.todos[key].subtask).length) * 100);
       }
-      return val;
+      return this.todos[key].subtask ? val : this.todos[key].isDone * 100;
+    },
+    progressColor(progress) {
+      return ['error', 'warning', 'success'][Math.floor(progress / 40)];
     },
   },
   computed: {

@@ -7,15 +7,17 @@
       >
         <v-col cols="8">
           <v-text-field
-            v-model="newTodo"
+            v-model.trim="newTodo"
             label="Add Todo"
+            clearable
+            prepend-inner-icon="mdi-clipboard-list-outline"
             @keyup.enter="addTodo"
             solo
           ></v-text-field>
         </v-col>
       </v-row>
     </v-container>
-    <Card todoRef="todoRef"></Card>
+    <Card :todoRef="todoRef"></Card>
   </div>
 
 </template>
@@ -35,8 +37,7 @@ export default {
     newTodo: '',
   }),
   created() {
-    // const user = this.$store.getters['auth/user'];
-    // this.initiateRef();
+    this.initiateRef();
   },
   methods: {
     initiateRef() {
@@ -48,14 +49,12 @@ export default {
     },
     addTodo() {
       if (this.newTodo) {
-        const newData = {
+        this.todoRef.push({
           text: this.newTodo,
           isDone: false,
-          desc: '',
           date: null,
           view: false,
-        };
-        this.todoRef.set([...this.$store.getters['todo/todos'], newData]);
+        });
       }
       this.newTodo = '';
     },

@@ -32,9 +32,7 @@ export default {
       commit('setConfig', config);
     },
     setRef({ commit, dispatch }, userData) {
-      console.log('setting ref');
       if (userData) {
-        console.log('user data exist');
         const todosRef = firebase.database().ref(`/todo/${userData.uid}/todos`);
         todosRef.on('value', (snapshot) => {
           dispatch('setTodo', snapshot.val());

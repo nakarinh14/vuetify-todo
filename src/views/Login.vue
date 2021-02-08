@@ -45,6 +45,9 @@ export default {
     errorMessage: '',
     showPassword: false,
   }),
+  created() {
+    firebase.auth().signOut();
+  },
   methods: {
     async signIn() {
       try {

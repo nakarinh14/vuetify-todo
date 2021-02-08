@@ -1,9 +1,9 @@
 <template>
   <div>
-    <v-container>
+    <v-container fluid>
       <v-row
         align="center"
-        justify="space-around"
+        justify="end"
       >
         <v-col cols="8">
           <v-text-field
@@ -15,16 +15,68 @@
             solo
           ></v-text-field>
         </v-col>
+        <v-col
+          cols="2"
+        >
+          <div class="text-center justify-center">
+            <v-btn
+              text
+              color="primary"
+              @click="onclickLogout"
+            >
+              LOGOUT
+            </v-btn>
+          </div>
+        </v-col>
       </v-row>
     </v-container>
-    <Card :todoRef="todoRef"></Card>
+    <Card></Card>
+    <v-container id="btn-footer">
+      <v-row
+        align="center"
+        justify="space-around"
+      >
+        <v-col cols="5">
+          <div class="text-center">
+            <v-badge
+              color="green"
+              :content="activeLength()"
+              dark
+              overlap
+            >
+              <v-btn
+                :color="hideActive ? 'grey' : 'primary'"
+                large
+                @click="toggleHideActive"
+              >
+                ACTIVE
+              </v-btn>
+            </v-badge>
+            <v-badge
+              color="blue"
+              :content="completedLength()"
+              dark
+              overlap
+            >
+              <v-btn
+                :color="hideComplete ? 'grey' : 'green'"
+                large
+                @click="toggleHideComplete"
+              >
+                COMPLETED
+              </v-btn>
+            </v-badge>
+          </div>
+        </v-col>
+      </v-row>
+    </v-container>
   </div>
-
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 import Card from '@/components/Card.vue';
+import { filterKeyByIsDone } from '@/utils/formatTodo';
 
 export default {
   name: 'Todo',
@@ -32,15 +84,7 @@ export default {
   data: () => ({
     newTodo: '',
   }),
-  created() {
-    this.initiateRef();
-  },
   methods: {
-    initiateRef() {
-      this.todoRef.on('value', (snapshot) => {
-        this.$store.dispatch('todo/setTodo', snapshot.val());
-      });
-    },
     addTodo() {
       if (this.newTodo) {
         this.todoRef.push({
@@ -52,13 +96,50 @@ export default {
       }
       this.newTodo = '';
     },
+    activeLength() {
+      return this.todos ? String(filterKeyByIsDone(this.todos, false)) : '0';
+    },
+    completedLength() {
+      return this.todos ? String(filterKeyByIsDone(this.todos, true)) : '0';
+    },
+    toggleHideComplete() {
+      this.configRef.transaction((config) => {
+        // eslint-disable-next-line no-param-reassign
+        config.hideComplete = !config.hideComplete;
+        return config;
+      });
+    },
+    toggleHideActive() {
+      this.configRef.transaction((config) => {
+        // eslint-disable-next-line no-param-reassign
+        config.hideActive = !config.hideActive;
+        return config;
+      });
+    },
+    onclickLogout() {
+      this.$router.push({ name: 'Login' });
+    },
   },
   computed: {
     ...mapGetters({
       todos: 'todo/todos',
-      todoRef: 'todo/ref',
+      todoRef: 'todo/todosRef',
+      configRef: 'todo/configRef',
+      hideComplete: 'todo/hideComplete',
+      hideActive: 'todo/hideActive',
     }),
   },
 };
 
 </script>
+
+<style scoped>
+#btn-footer {
+  margin-top: 30px;
+}
+
+#btn-footer span {
+  margin-left: 15px;
+  margin-right: 15px;
+}
+</style>

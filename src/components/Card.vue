@@ -139,7 +139,7 @@ export default {
           if (child) {
             todo.subtask[child].isDone = !todo.subtask[child].isDone;
             const doneLength = filterKeyByIsDone(todo.subtask, true).length;
-            todo.isDone = doneLength > 0 ? doneLength === keysArr.length : 0;
+            todo.isDone = keysArr.length > 0 ? doneLength === keysArr.length : false;
           } else {
             todo.isDone = !todo.isDone;
             if (todo.subtask) {
@@ -153,8 +153,9 @@ export default {
       });
     },
     toggleExpansion(key) {
-      this.todoRef.child(key).update({
-        view: !this.todos[key].view,
+      this.todoRef.child(key).transaction((todo) => {
+        todo.view = !todo.view;
+        return todo;
       });
     },
     toggleDatePicker(key) {
@@ -171,7 +172,7 @@ export default {
           // Include deletion of child node in length calculation
           const keysArrLength = todo.subtask ? Object.keys(todo.subtask).length - 1 : 0;
           const doneLength = filterKeyByIsDone(todo.subtask, true).length - childIsDone;
-          todo.isDone = doneLength > 0 ? doneLength === keysArrLength : false;
+          todo.isDone = keysArrLength > 0 ? doneLength === keysArrLength : false;
           todo.subtask[child] = null;
           return todo;
         });

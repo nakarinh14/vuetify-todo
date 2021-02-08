@@ -8,42 +8,57 @@
         justify="space-around"
       >
         <v-col cols="6">
-          <v-hover v-slot="{ hover }">
             <v-card
               class="todoCard"
               elevation="1"
               outlined
             >
-              <v-card-title class="headline">
-                <v-btn
-                  class="no-hover"
-                  :ripple="false"
-                  :color="calculateProgress(idx) === 100 ? 'green' : 'grey'"
-                  @click="() => toggleCheck(idx)"
-                  icon
-                >
-                  <v-icon
-                    large
-                    left
+              <v-hover v-slot="{ hover }">
+                <v-card-title class="headline">
+                  <v-btn
+                    class="no-hover"
+                    :ripple="false"
+                    :color="calculateProgress(idx) === 100 ? 'green' : 'grey'"
+                    @click="() => toggleCheck(idx)"
+                    icon
                   >
-                    mdi-check-circle
-                  </v-icon>
-                </v-btn>
-                <span>{{ todo.text }}</span>
-                <v-spacer></v-spacer>
-                <v-btn
-                  :class="{ 'on-hover': hover, 'hide': !hover, 'no-hover':true }"
-                  @click="() => removeTodo(idx)"
-                  :ripple=false
-                  color="red"
-                  right
-                  icon
-                >
-                  <v-icon right>
-                    mdi-close
-                  </v-icon>
-                </v-btn>
-              </v-card-title>
+                    <v-icon
+                      large
+                      left
+                    >
+                      mdi-check-circle
+                    </v-icon>
+                  </v-btn>
+                  <span
+                    v-if="editing !== idx"
+                    @click="startEdit(todo.text, idx)"
+                  >
+                    {{todo.text}}
+                  </span>
+                  <v-text-field
+                    v-else
+                    v-model="editingText"
+                    dense
+                    outlined
+                    @keyup.enter="confirmEdit(idx)"
+                    @keyup.esc="cancelEdit"
+                  >
+                  </v-text-field>
+                  <v-spacer></v-spacer>
+                  <v-btn
+                    :class="{ 'on-hover': hover, 'hide': !hover, 'no-hover':true }"
+                    @click="() => removeTodo(idx)"
+                    :ripple=false
+                    color="red"
+                    right
+                    icon
+                  >
+                    <v-icon right>
+                      mdi-close
+                    </v-icon>
+                  </v-btn>
+                </v-card-title>
+              </v-hover>
               <v-progress-linear
                 :value="calculateProgress(idx)"
                 :color="progressColor(calculateProgress(idx))"
@@ -76,10 +91,14 @@
                 :parent="idx"
                 :toggle-check="toggleCheck"
                 :remove-todo="removeTodo"
+                :startEdit="startEdit"
+                :confirmEdit="confirmEdit"
+                :cancelEdit="cancelEdit"
+                :editing="editing"
+                v-model="editingText"
               >
               </Subcard>
             </v-card>
-          </v-hover>
         </v-col>
       </v-row>
     </v-container>
@@ -126,6 +145,7 @@ export default {
       dateTarget: null,
       modal: false,
       editing: null,
+      editingText: '',
       showSubtasks: [],
     };
   },
@@ -199,6 +219,22 @@ export default {
     },
     progressColor(progress) {
       return ['error', 'warning', 'success'][Math.floor(progress / 40)];
+    },
+    startEdit(text, parent, child) {
+      this.editing = child ? `${parent}-${child}` : parent;
+      this.editingText = text;
+    },
+    confirmEdit(parent, child) {
+      const key = child ? `${parent}/subtask/${child}` : parent;
+      this.todoRef.child(key).update({
+        text: this.editingText,
+      });
+      this.editing = null;
+      this.editingText = '';
+    },
+    cancelEdit() {
+      this.editing = null;
+      this.editingText = '';
     },
   },
   computed: {

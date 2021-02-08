@@ -6,38 +6,37 @@
         <v-container>
           <v-row
             align="center"
+            v-for="(subtask, sub_idx) in subtask"
+            :key="`${parent}_${sub_idx}`"
             no-gutters
           >
-            <v-col
-              cols="12"
-              v-for="(subtask, sub_idx) in subtask"
-              :key="`${parent}_${sub_idx}`"
+            <v-btn
+              :ripple="false"
+              :color="subtask.isDone ? 'green' : 'grey'"
+              @click="() => toggleCheck(parent, sub_idx)"
+              icon
             >
-
-              <v-btn
-                :ripple="false"
-                :color="subtask.isDone ? 'green' : 'grey'"
-                @click="() => toggleCheck(parent, sub_idx)"
-                icon
-              >
-                <v-icon>
-                  mdi-check-circle-outline
-                </v-icon>
-              </v-btn>
-              <span>{{ subtask.text }}</span>
-              <v-spacer></v-spacer>
-              <v-btn
-                @click="() => removeTodo(parent, sub_idx)"
-                :ripple=false
-                color="red"
-                icon
-              >
-                <v-icon>
-                  mdi-close
-                </v-icon>
-              </v-btn>
-              <v-divider inset></v-divider>
+              <v-icon>
+                mdi-check-circle-outline
+              </v-icon>
+            </v-btn>
+            <span>{{ subtask.text }}</span>
+            <v-spacer></v-spacer>
+            <v-btn
+              @click="() => removeTodo(parent, sub_idx)"
+              :ripple=false
+              color="red"
+              icon
+            >
+              <v-icon>
+                mdi-close
+              </v-icon>
+            </v-btn>
+            <v-col cols="12">
+              <v-divider></v-divider>
             </v-col>
+          </v-row>
+          <v-row no-gutters>
             <v-col cols="12">
               <RippleIconText
                 id="add-sub"
@@ -65,17 +64,19 @@ export default {
   props: ['view', 'subtask', 'parent', 'toggleCheck', 'removeTodo'],
   methods: {
     addSubtask(key) {
-      this.todoRef.child(key)
-        .child('subtask')
-        .push({
-          text: 'New Subtask',
-          isDone: false,
-        });
+      const refChild = this.todoRef.child(`${key}`);
+      refChild.child('subtask').push({
+        text: 'New Subtask',
+        isDone: false,
+      });
+      refChild.update({
+        isDone: false,
+      });
     },
   },
   computed: {
     ...mapGetters({
-      todoRef: 'todo/ref',
+      todoRef: 'todo/todosRef',
     }),
   },
 };

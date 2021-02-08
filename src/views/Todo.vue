@@ -97,10 +97,10 @@ export default {
       this.newTodo = '';
     },
     activeLength() {
-      return this.todos ? String(filterKeyByIsDone(this.todos, false)) : '0';
+      return String(filterKeyByIsDone(this.todos, false).length);
     },
     completedLength() {
-      return this.todos ? String(filterKeyByIsDone(this.todos, true)) : '0';
+      return String(filterKeyByIsDone(this.todos, true).length);
     },
     toggleHideComplete() {
       this.configRef.transaction((config) => {

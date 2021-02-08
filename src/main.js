@@ -15,7 +15,7 @@ let app;
 firebase.auth().onAuthStateChanged((user) => {
   store.dispatch('auth/setUserProfile', user);
   if (!app) {
-    new Vue({
+    app = new Vue({
       router,
       store,
       vuetify,

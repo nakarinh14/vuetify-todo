@@ -26,8 +26,9 @@
 
     <v-divider></v-divider>
     <v-card-actions>
-      <v-btn @click="signUp" color="success">Register</v-btn>
-      <v-btn @click="signIn" color="info" >Login</v-btn>
+      <v-btn @click="() => redirectAction(signUp)" color="success">Register</v-btn>
+      <v-btn @click="() => redirectAction(signIn)" color="info" >Login</v-btn>
+      <v-btn @click="() => redirectAction(signInWithGoogle)">Sign in with Google</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -49,21 +50,24 @@ export default {
     firebase.auth().signOut();
   },
   methods: {
-    async signIn() {
+    async redirectAction(authAction) {
       try {
-        await firebase.auth().signInWithEmailAndPassword(this.email, this.password);
+        await authAction();
         await this.$router.push({ name: 'Todo' });
       } catch (e) {
         this.errorMessage = e.message;
       }
     },
+    async signInWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+      await firebase.auth().signInWithPopup(provider);
+    },
+    async signIn() {
+      await firebase.auth().signInWithEmailAndPassword(this.email, this.password);
+    },
     async signUp() {
-      try {
-        await firebase.auth().createUserWithEmailAndPassword(this.email, this.password);
-        await this.$router.push({ name: 'Todo' });
-      } catch (e) {
-        this.errorMessage = e.message;
-      }
+      await firebase.auth().createUserWithEmailAndPassword(this.email, this.password);
     },
   },
 };

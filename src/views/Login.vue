@@ -60,6 +60,7 @@ export default {
     async signUp() {
       try {
         await firebase.auth().createUserWithEmailAndPassword(this.email, this.password);
+        await this.$router.push({ name: 'Todo' });
       } catch (e) {
         this.errorMessage = e.message;
       }

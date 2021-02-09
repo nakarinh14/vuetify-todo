@@ -152,7 +152,6 @@ export default {
   methods: {
     toggleCheck(parent, child) {
       const ref = this.todoRef.child(parent);
-      /* eslint-disable no-param-reassign */
       ref.transaction((todo) => {
         if (todo) {
           const keysArr = todo.subtask ? Object.keys(todo.subtask) : [];
@@ -229,8 +228,7 @@ export default {
       this.todoRef.child(key).update({
         text: this.editingText,
       });
-      this.editing = null;
-      this.editingText = '';
+      this.cancelEdit();
     },
     cancelEdit() {
       this.editing = null;

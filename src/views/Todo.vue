@@ -3,7 +3,7 @@
     <v-container fluid>
       <v-row
         align="center"
-        justify="end"
+        justify="space-around"
       >
         <v-col cols="8">
           <v-text-field
@@ -15,23 +15,13 @@
             solo
           ></v-text-field>
         </v-col>
-        <v-col
-          cols="2"
-        >
-          <div class="text-center justify-center">
-            <v-btn
-              text
-              color="primary"
-              @click="onclickLogout"
-            >
-              LOGOUT
-            </v-btn>
-          </div>
-        </v-col>
       </v-row>
     </v-container>
-    <Card></Card>
-    <v-container id="btn-footer">
+    <Card v-if="todos"></Card>
+    <v-container
+      v-if="todos"
+      id="btn-footer"
+    >
       <v-row
         align="center"
         justify="space-around"
@@ -69,7 +59,30 @@
           </div>
         </v-col>
       </v-row>
+      <v-row
+        align="center"
+        justify="space-around"
+      >
+        <v-col cols="5">
+          <div class="text-center">
+            <v-btn
+              large
+              color="orange"
+              outlined
+              @click="onClickRemoveCompleted"
+            >
+              REMOVE COMPLETED
+            </v-btn>
+          </div>
+        </v-col>
+      </v-row>
     </v-container>
+    <h2
+      v-else
+      class="text-center grey--text"
+    >
+      Todo List is Empty.
+    </h2>
   </div>
 </template>
 
@@ -104,20 +117,25 @@ export default {
     },
     toggleHideComplete() {
       this.configRef.transaction((config) => {
-        // eslint-disable-next-line no-param-reassign
         config.hideComplete = !config.hideComplete;
         return config;
       });
     },
     toggleHideActive() {
       this.configRef.transaction((config) => {
-        // eslint-disable-next-line no-param-reassign
         config.hideActive = !config.hideActive;
         return config;
       });
     },
-    onclickLogout() {
-      this.$router.push({ name: 'Login' });
+    onClickRemoveCompleted() {
+      this.todoRef.transaction((todo) => {
+        Object.keys(todo).forEach((c) => {
+          if (todo[c].isDone) {
+            todo[c] = null;
+          }
+        });
+        return todo;
+      });
     },
   },
   computed: {

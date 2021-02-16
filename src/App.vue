@@ -8,12 +8,6 @@
       <v-app-bar-nav-icon></v-app-bar-nav-icon>
       <v-app-bar-title>Yet Another Todo List</v-app-bar-title>
       <v-spacer></v-spacer>
-      <v-btn
-        text
-        dark
-      >
-        ADD TODOLIST
-      </v-btn>
       <AvatarProfile></AvatarProfile>
     </v-app-bar>
     <v-main class="blue-grey lighten-5">
